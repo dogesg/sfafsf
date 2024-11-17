@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Random Mejorada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1, h3 {
+            text-align: center;
+        }
+
+        .options {
+            margin: 20px 0;
+        }
+
+        .options label {
+            display: block;
+            margin: 5px 0;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #3700b3;
+        }
+
+        .output {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Página Random Mejorada</h1>
+
+        <h3>Seleccionar dominios</h3>
+        <div class="options" id="domain-options">
+            <!-- Los dominios preestablecidos -->
+        </div>
+        <input type="text" id="custom-domain" placeholder="Agregar dominio personalizado">
+        <button class="btn" onclick="addCustomDomain()">Agregar Dominio</button>
+
+        <h3>Bloquear sitios</h3>
+        <div class="options" id="blocked-sites">
+            <label><input type="checkbox" value="www.godaddy.com" checked> www.godaddy.com</label>
+            <label><input type="checkbox" value="www.bluehost.com" checked> www.bluehost.com</label>
+        </div>
+        <input type="text" id="custom-block" placeholder="Agregar sitio bloqueado">
+        <button class="btn" onclick="addBlockedSite()">Agregar Bloqueo</button>
+
+        <h3>Número de páginas exitosas</h3>
+        <input type="number" id="success-pages" placeholder="Número de páginas" min="1">
+
+        <button class="btn" onclick="startRandomSearch()">Iniciar Búsqueda</button>
+
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        const predefinedDomains = [
+            '.com', '.net', '.org', '.io', '.is', '.forum', '.site', '.app', '.info', 
+            '.shop', '.club', '.xyz', '.biz', '.live', '.space', '.co', '.tech', '.dev', 
+            '.design', '.store', '.pro', '.ai', '.world', '.gallery', '.agency', '.blog', 
+            '.art', '.page', '.solutions', '.media'
+        ];
+        const domainOptions = document.getElementById('domain-options');
+        const blockedSites = document.getElementById('blocked-sites');
+        const output = document.getElementById('output');
+
+        // Agregar dominios preestablecidos
+        predefinedDomains.forEach(domain => {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" value="${domain}" checked> ${domain}`;
+            domainOptions.appendChild(label);
+        });
+
+        // Agregar dominio personalizado
+        function addCustomDomain() {
+            const input = document.getElementById('custom-domain');
+            const domain = input.value.trim();
+            if (domain) {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" value="${domain}" checked> ${domain}`;
+                domainOptions.appendChild(label);
+                input.value = '';
+            }
+        }
+
+        // Agregar sitio bloqueado personalizado
+        function addBlockedSite() {
+            const input = document.getElementById('custom-block');
+            const site = input.value.trim();
+            if (site) {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" value="${site}" checked> ${site}`;
+                blockedSites.appendChild(label);
+                input.value = '';
+            }
+        }
+
+        async function startRandomSearch() {
+            const selectedDomains = Array.from(domainOptions.querySelectorAll('input:checked'))
+                .map(input => input.value);
+            const blockedDomains = Array.from(blockedSites.querySelectorAll('input:checked'))
+                .map(input => input.value);
+
+            const successCount = parseInt(document.getElementById('success-pages').value, 10);
+            if (!successCount || successCount < 1) {
+                alert('Por favor, ingresa un número válido de páginas exitosas.');
+                return;
+            }
+
+            let foundPages = 0;
+
+            while (foundPages < successCount) {
+                const randomString = Math.random().toString(36).substring(2, 8);
+                const domain = selectedDomains[Math.floor(Math.random() * selectedDomains.length)];
+                const url = `https://www.${randomString}${domain}`;
+
+                if (blockedDomains.some(blocked => url.includes(blocked))) {
+                    continue; // Saltar si el dominio está bloqueado
+                }
+
+                try {
+                    await fetch(url, { mode: 'no-cors' });
+                    window.open(url, '_blank');
+                    foundPages++;
+                    output.textContent = `Se abrieron ${foundPages} de ${successCount} páginas.`;
+                } catch {
+                    // Silenciar errores para continuar con la búsqueda
+                }
+            }
+        }
+    </script>
+</body>
+</html>
